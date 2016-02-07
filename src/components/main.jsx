@@ -19,7 +19,7 @@ class Main extends React.Component {
         axios.get('http://localhost:3020/')
             .then(response => {
                 this.setState({
-                    markov: new Markovify(response.data, 2, 140)
+                    markov: new Markovify(response.data, 2, 500)
                 });
             })
         .catch(error => {

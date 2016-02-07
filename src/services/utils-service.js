@@ -31,7 +31,7 @@ export const _splitOnSpaceShiftAndJoin = (str) => {
 
 export const _scrub = (str) => {
     if (str) {
-        return str.replace(/[^a-zA-Z\'\,\t ]/g, "");
+        return str.replace(/[^a-zA-Z\'\,\.\!\?\;\t ]/g, "");
     }
 };
 

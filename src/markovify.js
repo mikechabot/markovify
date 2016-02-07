@@ -3,7 +3,7 @@ import util from './services/utils-service';
 
 export class Markovify {
     constructor(data, prefixLength, charLimit, deferBuild) {
-        this.chain;                         // Map that holds the generated Markov chain
+        this.chain = {};                         // Map that holds the generated Markov chain
         this.data = data;                   // Large string of text
         this.prefixLength = prefixLength;   // Chain prefix length
         this.charLimit = charLimit;         // Cap the length of generated sentences
@@ -16,6 +16,11 @@ export class Markovify {
     }
     setData(data) {
         this.data = data;
+    }
+    getWordList() {
+        if (this.data) {
+            return util._splitOnSpace(this.data);
+        }
     }
     setPrefixLength(length) {
         this.prefixLength = length;
@@ -32,26 +37,40 @@ export class Markovify {
     }
     buildMarkovChain() {
         this.chain = {};
-        if (this.data) {
-            const words = util._splitOnSpace(this.data);
-            _.forEach(words, (word, i) => {
-                let prefix = util._scrub(word);
-                if (!_.isEmpty(prefix)) {
-                    for(let j = 1; j < this.prefixLength; j++) {
-                        const next = util._scrub(words[i+j]);
-                        if (next) {
-                            prefix = `${prefix} ${next}`;
-                        }
-                        const suffix = words[i + this.prefixLength];
-                        if (!_.isEmpty(suffix)) {
-                            this.addToChain(prefix, util._scrub(suffix));
-                        }
-                    }
+        const words = this.getWordList();
+        if (words) {
+            _.forEach(words, (word, index) => {
+                let prefix = this.buildPrefix(words, util._scrub(word), index);
+                let suffix = this.getSuffix(words, index);
+                if (prefix && suffix) {
+                    this.addToChain(prefix, suffix);
                 }
             });
             console.log(this.chain);
         } else {
             console.warn('No data found');
+        }
+    }
+    /**
+     *  A suffix contains only one (1) word
+     */
+    getSuffix(words, index) {
+        const suffix = words[index + this.prefixLength];
+        return util._scrub(suffix);
+    }
+    /**
+     *  A prefix contains as many words as defined by "prefixLength"
+     */
+    buildPrefix(words, word, index) {
+        if (!_.isEmpty(word)) {
+            let prefix;
+            for(let i = 1; i < this.prefixLength; i++) {
+                const nextWord = util._scrub(words[index + i]);
+                if (nextWord) {
+                    prefix = `${prefix || word} ${nextWord}`;
+                }
+            }
+            return prefix;
         }
     }
     getRandomPrefix() {
@@ -89,7 +108,7 @@ export class Markovify {
 
         } while (sentence.length <= this.charLimit);
 
-        return `${sentence.capitalize()}.`;
+        return sentence.capitalize();
     }
 }
 
