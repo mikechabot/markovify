@@ -1,5 +1,5 @@
 import React from 'react';
-import Markovify from '../services/markovify';
+import Markovify from '../markovify';
 import _ from 'lodash';
 import axios from 'axios';
 
@@ -30,7 +30,7 @@ class Main extends React.Component {
     generateText() {
         if (this.state.markov) {
             const texts = this.state.texts;
-            texts.push(this.state.markov.generateRandomSentence());
+            texts.unshift(this.state.markov.generateRandomSentence());
             this.setState({
                 texts: texts
             })
@@ -41,16 +41,16 @@ class Main extends React.Component {
         let view;
         if (!_.isEmpty(this.state.texts)) {
             view = (
-                <ol>
+                <ul>
                     {
                         this.state.texts.map((entry, index) => (
-                            <li style={{margin: 20, width: '50%'}}
+                            <li style={{margin: 25, width: 500}}
                                 key={index}>
                                 {entry}
                             </li>
                         ))
                     }
-                </ol>
+                </ul>
             )
         } else {
             view = <div>No generated text</div>;
