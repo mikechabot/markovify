@@ -3,7 +3,7 @@ import util from './services/utils-service';
 
 export class Markovify {
     constructor(data, prefixLength, charLimit, deferBuild) {
-        this.chain = {};                         // Map that holds the generated Markov chain
+        this.chain = {};                    // Map that holds the generated Markov chain
         this.data = data;                   // Large string of text
         this.prefixLength = prefixLength;   // Chain prefix length
         this.charLimit = charLimit;         // Cap the length of generated sentences
@@ -63,11 +63,11 @@ export class Markovify {
      */
     buildPrefix(words, word, index) {
         if (!_.isEmpty(word)) {
-            let prefix;
+            let prefix = word;
             for(let i = 1; i < this.prefixLength; i++) {
                 const nextWord = util._scrub(words[index + i]);
                 if (nextWord) {
-                    prefix = `${prefix || word} ${nextWord}`;
+                    prefix = `${prefix} ${nextWord}`;
                 }
             }
             return prefix;
