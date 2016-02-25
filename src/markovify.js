@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import util from './services/utils-service';
+import * as utils from './services/utils-service';
 
 export class Markovify {
     constructor(data, prefixLength, charLimit, deferBuild) {
@@ -19,7 +19,7 @@ export class Markovify {
     }
     getWordList() {
         if (this.data) {
-            return util._splitOnSpace(this.data);
+            return utils._splitOnSpace(this.data);
         }
     }
     setPrefixLength(length) {
@@ -30,7 +30,7 @@ export class Markovify {
     }
     addToChain(prefix, suffix) {
         const suffixes = this.chain[prefix] || [];
-        if (!util._contains(suffixes, suffix)) {
+        if (!utils._contains(suffixes, suffix)) {
             suffixes.push(suffix);
             this.chain[prefix] = suffixes;
         }
@@ -40,15 +40,14 @@ export class Markovify {
         const words = this.getWordList();
         if (words) {
             _.forEach(words, (word, index) => {
-                let prefix = this.buildPrefix(words, util._scrub(word), index);
+                let prefix = this.buildPrefix(words, utils._scrub(word), index);
                 let suffix = this.getSuffix(words, index);
                 if (prefix && suffix) {
                     this.addToChain(prefix, suffix);
                 }
             });
-            console.log(this.chain);
         } else {
-            console.warn('No data found');
+            console.warn(`No words found; check your 'data' object`);
         }
     }
     /**
@@ -56,7 +55,7 @@ export class Markovify {
      */
     getSuffix(words, index) {
         const suffix = words[index + this.prefixLength];
-        return util._scrub(suffix);
+        return utils._scrub(suffix);
     }
     /**
      *  A prefix contains as many words as defined by "prefixLength"
@@ -65,7 +64,7 @@ export class Markovify {
         if (!_.isEmpty(word)) {
             let prefix = word;
             for(let i = 1; i < this.prefixLength; i++) {
-                const nextWord = util._scrub(words[index + i]);
+                const nextWord = utils._scrub(words[index + i]);
                 if (nextWord) {
                     prefix = `${prefix} ${nextWord}`;
                 }
@@ -75,12 +74,12 @@ export class Markovify {
     }
     getRandomPrefix() {
         const keys = _.keys(this.chain);
-        return keys[util._randomNumberUpTo(keys.length)];
+        return keys[utils._randomNumberUpTo(keys.length)];
     }
     getRandomSuffix(prefix) {
         const choices = this.chain[prefix];
         if (choices) {
-            return choices[util._randomNumberUpTo(choices.length)];
+            return choices[utils._randomNumberUpTo(choices.length)];
         }
     }
     /*
@@ -88,14 +87,30 @@ export class Markovify {
      */
     shiftPrefix(prefix, suffix) {
         if (this.prefixLength > 1) {
-            return `${util._splitOnSpaceShiftAndJoin(prefix)} ${suffix}`;
+            return `${utils._splitOnSpaceShiftAndJoin(prefix)} ${suffix}`;
         }
         return suffix;
     }
-    generateRandomSentence() {
-        let prefix = this.getRandomPrefix(),
-            sentence;
 
+    addEndingPunctuation(sentence) {
+        if (!utils._hasEndingPunctuation(sentence)) {
+            sentence = utils._addEndingPunctuation(sentence);
+        }
+        return sentence;
+    }
+
+    /*
+     * Prettify the generated sentence
+     */
+    cleanUp(sentence) {
+        sentence = this.addEndingPunctuation(sentence);
+        return sentence.capitalize();
+    }
+
+    generateRandomSentence() {
+        let sentence;
+
+        let prefix = this.getRandomPrefix();
         do {
             const suffix = this.getRandomSuffix(prefix);
             if (!suffix) break;
@@ -108,7 +123,7 @@ export class Markovify {
 
         } while (sentence.length <= this.charLimit);
 
-        return sentence.capitalize();
+        return this.cleanUp(sentence);
     }
 }
 

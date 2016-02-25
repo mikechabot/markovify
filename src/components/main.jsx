@@ -95,7 +95,6 @@ class Main extends React.Component {
         });
     }
     render() {
-        console.log(this.state.isBuilt);
         return (
             <div className="markov-container">
                 <div className="item">
